@@ -50,4 +50,34 @@ Dado el riesgo operacional, los movimientos de stock no son editables para prese
 *   `POST /api/stock-movements` - Asentamiento de entrada (`entry`) o despacho (`exit`). Evalúa insuficiencias de stock emitiendo códigos de error validos HTTP `422`.
 
 ---
+
+## 🛠️ Instalación y Runbook Local (Demostración)
+
+Pasos exactos para inicializar la API Rest en un entorno en blanco:
+
+1. Clonar el repositorio y entrar al proyecto:
+   ```bash
+   git clone https://github.com/Arielvrz/Backend_ProyectoFinalAARZ.git
+   cd Backend_ProyectoFinalAARZ
+   ```
+2. Instalar dependencias de servidor:
+   ```bash
+   composer install
+   ```
+3. Generar archivo de entorno y llave de cifrado:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+4. Levantar la base de datos (con reseteo limpio) y datos semillas:
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+5. Arrancar el servidor web y compilar la documentación Swagger:
+   ```bash
+   php artisan serve
+   php artisan l5-swagger:generate
+   ```
+
+---
 *Desarrollado como proyecto final de Arquitectura Backend.*
