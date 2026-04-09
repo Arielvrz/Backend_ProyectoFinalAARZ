@@ -1,3 +1,4 @@
+# Laravel defaults
 *.log
 .DS_Store
 .env
@@ -23,3 +24,18 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Databases (Protegiendo tu base de datos SQLite)
+/database/*.sqlite
+/database/*.sqlite3
+*.db
+
+# Google IDX / Cloud Workstations
+.idx/
+
+# AI Assistants / Antigravity / Claude (Evita repositorios sucios)
+.claude/
+.junie/
+.mcp.json
+AGENTS.md
+CLAUDE.md

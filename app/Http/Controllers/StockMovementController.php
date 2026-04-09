@@ -7,6 +7,7 @@ use App\Http\Resources\StockMovementResource;
 use App\Models\Product;
 use App\Models\StockMovement;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
 
 class StockMovementController extends Controller
 {
@@ -56,42 +57,47 @@ class StockMovementController extends Controller
     public function store(StoreStockMovementRequest $request)
     {
         $this->authorize('manage-inventory');
-        $product = Product::findOrFail($request->product_id);
 
-        if ($request->type === 'exit') {
-            if ($product->current_stock < $request->quantity) {
-                return response()->json([
-                    'message' => 'Stock insuficiente',
-                    'available' => $product->current_stock,
-                    'requested' => $request->quantity
-                ], 422);
+        return DB::transaction(function () use ($request) {
+            // Pessimistic Locking: Bloquea la fila del producto hasta que termine la transacción
+            $product = Product::lockForUpdate()->findOrFail($request->product_id);
+
+            if ($request->type === 'exit') {
+                if ($product->current_stock < $request->quantity) {
+                    // Al retornar aquí, la transacción termina sin guardar cambios
+                    return response()->json([
+                        'message' => 'Stock insuficiente',
+                        'available' => $product->current_stock,
+                        'requested' => $request->quantity
+                    ], 422);
+                }
+                $product->current_stock -= $request->quantity;
             }
-            $product->current_stock -= $request->quantity;
-        }
 
-        if ($request->type === 'entry') {
-            $product->current_stock += $request->quantity;
-        }
+            if ($request->type === 'entry') {
+                $product->current_stock += $request->quantity;
+            }
 
-        $product->save();
+            $product->save();
 
-        $movement = StockMovement::create([
-            'product_id' => $product->id,
-            'user_id' => auth()->id(),
-            'type' => $request->type,
-            'quantity' => $request->quantity,
-            'notes' => $request->notes,
-            'created_at' => now(),
-        ]);
+            $movement = StockMovement::create([
+                'product_id' => $product->id,
+                'user_id' => auth()->id(),
+                'type' => $request->type,
+                'quantity' => $request->quantity,
+                'notes' => $request->notes,
+                'created_at' => now(),
+            ]);
 
-        $movement->load(['product', 'user.role']);
+            $movement->load(['product', 'user.role']);
 
-        $response = (new StockMovementResource($movement))->toArray(request());
+            $response = (new StockMovementResource($movement))->toArray(request());
 
-        if ($product->current_stock < $product->min_stock) {
-            $response['warning'] = 'Stock por debajo del mínimo. Considere reabastecer.';
-        }
+            if ($product->current_stock < $product->min_stock) {
+                $response['warning'] = 'Stock por debajo del mínimo. Considere reabastecer.';
+            }
 
-        return response()->json($response, 201);
+            return response()->json($response, 201);
+        });
     }
 }

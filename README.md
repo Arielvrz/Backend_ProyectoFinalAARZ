@@ -2,7 +2,7 @@
 
 Este proyecto es una API RESTful desarrollada con **Laravel 11**, diseñada para gestionar el catálogo de productos y los movimientos de inventario de una empresa. Implementa sólidas prácticas de arquitectura y seguridad, destacando el uso de Resource Controllers, autenticación state-less, autorización basada en roles (RBAC) y prevención de *Race Conditions*.
 
-## 🚀 Arquitectura y Tecnologías
+## Arquitectura y Tecnologías
 
 *   **Framework:** Laravel 11 (PHP 8.2+)
 *   **Seguridad:** Laravel Sanctum para autenticación API basada en tokens. Prevención de concurrencia mediante Pessimistic Locking (`lockForUpdate()`) e Integridad Transaccional de Base de Datos.
@@ -12,7 +12,7 @@ Este proyecto es una API RESTful desarrollada con **Laravel 11**, diseñada para
 
 ---
 
-## 🔐 Seguridad y Autorización
+## Seguridad y Autorización
 
 La API está protegida por defecto utilizando el middleware `auth:sanctum`. El modelo de seguridad se divide en dos capas:
 1.  **Autenticación**: Mediante el endpoint `/api/login` se expide un access token state-less.
@@ -20,7 +20,7 @@ La API está protegida por defecto utilizando el middleware `auth:sanctum`. El m
 
 ---
 
-## ⚙️ Modelos Principales
+## Modelos Principales
 El ORM Eloquent mapea las siguientes entidades clave y sus relaciones:
 *   `User` & `Role` (Sistema de usuarios y jerarquía)
 *   `Product`, `Category`, `Supplier` y `MeasurementUnit` (Catálogo maestro relacional)
@@ -28,7 +28,7 @@ El ORM Eloquent mapea las siguientes entidades clave y sus relaciones:
 
 ---
 
-## 📡 Endpoints Principales
+## Endpoints Principales
 
 ### Swagger Docs
 Visita `http://localhost:8000/api/documentation` para consumir los esquemas detallados e interactuar con la plataforma de prueba de la API.
@@ -51,7 +51,7 @@ Dado el riesgo operacional, los movimientos de stock no son editables para prese
 
 ---
 
-## 🛠️ Instalación y Runbook Local (Demostración)
+## Instalación y Runbook Local (Demostración)
 
 Pasos exactos para inicializar la API Rest en un entorno en blanco:
 
