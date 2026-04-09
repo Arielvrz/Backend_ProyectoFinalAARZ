@@ -1,58 +1,53 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# API de Gestión de Inventarios (Laravel 11)
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este proyecto es una API RESTful desarrollada con **Laravel 11**, diseñada para gestionar el catálogo de productos y los movimientos de inventario de una empresa. Implementa sólidas prácticas de arquitectura y seguridad, destacando el uso de Resource Controllers, autenticación state-less, autorización basada en roles (RBAC) y prevención de *Race Conditions*.
 
-## About Laravel
+## 🚀 Arquitectura y Tecnologías
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+*   **Framework:** Laravel 11 (PHP 8.2+)
+*   **Seguridad:** Laravel Sanctum para autenticación API basada en tokens. Prevención de concurrencia mediante Pessimistic Locking (`lockForUpdate()`) e Integridad Transaccional de Base de Datos.
+*   **Base de Datos:** Estructura modelada mediante migraciones de Eloquent, con soporte para borrado lógico (`SoftDeletes`) para salvaguardar la integridad de asientos contables.
+*   **Documentación:** API documentada con OpenAPI / Swagger.
+*   **Testing:** Pest/PHPUnit cubriendo pruebas unitarias y de integración end-to-end (Feature Tests).
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 🔐 Seguridad y Autorización
 
-## Learning Laravel
+La API está protegida por defecto utilizando el middleware `auth:sanctum`. El modelo de seguridad se divide en dos capas:
+1.  **Autenticación**: Mediante el endpoint `/api/login` se expide un access token state-less.
+2.  **Autorización (Policies)**: El sistema incorpora `Policies` (como la `ProductPolicy`) que evalúan roles en los endpoints. La Política asegura que las funciones destructivas o de alteración sobre el catálogo estén fuertemente delimitadas sólo a perfiles administradores, previniendo accesos de usuarios de baja jerarquía (ej. bodegueros).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+---
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ⚙️ Modelos Principales
+El ORM Eloquent mapea las siguientes entidades clave y sus relaciones:
+*   `User` & `Role` (Sistema de usuarios y jerarquía)
+*   `Product`, `Category`, `Supplier` y `MeasurementUnit` (Catálogo maestro relacional)
+*   `StockMovement` (Kardex: Registro de entradas y salidas referenciado y validado matemáticamente).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## 📡 Endpoints Principales
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+### Swagger Docs
+Visita `http://localhost:8000/api/documentation` para consumir los esquemas detallados e interactuar con la plataforma de prueba de la API.
 
-```bash
-composer require laravel/boost --dev
+### Autenticación
+*   `POST /api/login` - Inicio de sesión corporativo.
+*   `POST /api/logout` - Revocación de token actual (Requiere Auth).
 
-php artisan boost:install
-```
+### Gestión de Catálogo y Entidades (Requieren Auth)
+Mapeo REST (`GET`, `POST`, `PUT/PATCH` y `DELETE`):
+*   `/api/products` (Controlado por `ProductPolicy`)
+*   `/api/categories`
+*   `/api/suppliers`
+*   `/api/measurement-units`
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+### Movimientos de Stock (Reglas Especiales)
+Dado el riesgo operacional, los movimientos de stock no son editables para preservar su naturaleza de auditoría contable. Los cálculos implementan DB Transactions para garantizar su fiabilidad:
+*   `GET /api/stock-movements` - Lectura de historial.
+*   `POST /api/stock-movements` - Asentamiento de entrada (`entry`) o despacho (`exit`). Evalúa insuficiencias de stock emitiendo códigos de error validos HTTP `422`.
 
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+*Desarrollado como proyecto final de Arquitectura Backend.*
